@@ -1,0 +1,3 @@
+The project I chose is called [Infinitown](https://demos.littleworkshop.fr/infinitown).
+
+This is a fun project that combines different techniques to create a cool effect such as wrapping around the created grid to create the illusion of an infinite city. This is a nice example because techniques in Computer Graphics often use approximations or illusions to create realistic scenes. I've found simple approximations that gets close enough to the real life effect I'm trying to mimic to be easier to implement and more efficient to run than complicated simulations.
