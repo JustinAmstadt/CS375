@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+    <head></head>
+        <script src="../../Demos/Common/initShaders.js"></script>
+        <script src="../../Demos/Common/MV.js"></script>
+        <script src="../../Demos/Common/MatrixStack.js"></script>
+        <script src="../../Demos/Common/Shapes/Cylinder.js"></script>
+
+        <link rel="stylesheet" href="../Common/demo.css">
+        
+        <script>
+            window.onload = () => {
+                let canvas = document.getElementById("webgl-canvas");
+                let gl = canvas.getContext("webgl2");
+
+                gl.clearColor(0.2, 0.2, 0.2, 1.0);
+                gl.enable(gl.DEPTH_TEST);
+
+                let cone = new Cylinder(gl, 36);
+                let ms = new MatrixStack();
+                let angle = 0.0;
+
+                let render = () => {
+                    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+                    angle += 1.0;
+                    angle %= 360.0;
+
+                    ms.push();
+                    ms.rotate(angle, [0, 1, 1]);
+                    ms.scale(0.4);
+                    cone.MV = ms.current();
+                    cone.draw();
+                    ms.pop();
+
+                    requestAnimationFrame(render);
+                };
+
+                render();
+            };
+        </script>
+    </head>
+
+    <body>
+        <canvas id="webgl-canvas" width="512" height="512"></canvas>
+    </body>
+</html>
