@@ -14,6 +14,10 @@ class Cone {
     constructor(gl, numSides, vertexShader, fragmentShader) {
 
         vertexShader ||= `
+            out vec4 vColor;
+
+            uniform vec4 color;
+
             uniform int  numSides; // number of slices around the perimeter
 
             uniform mat4 P;  // Projection transformation
@@ -27,6 +31,7 @@ class Cone {
                 if (gl_VertexID == 0) {
                     float iid = float(gl_InstanceID);
                     v = vec4(0.0, 0.0, iid, 1.0);
+                    vColor = vec4(0.3, 0.0, 0.3, 0.1);
                 }
                 else {
                     // Since vertex ID zero is reserved for the center vertex
@@ -37,6 +42,7 @@ class Cone {
                     float dir = gl_InstanceID == 0 ? 1.0 : -1.0;
                     float angle = dir * vid * 2.0 * Pi / float(numSides);
                     v = vec4(cos(angle), sin(angle), 0.0, 1.0);
+                    vColor = color;
                 }
 
                 gl_Position = P * MV * v;
@@ -44,11 +50,11 @@ class Cone {
         `;
 
         fragmentShader ||= `
-            uniform vec4 color;
+            in vec4 vColor;
             out vec4 fColor;
 
             void main() {
-                fColor = color;
+                fColor = vColor;
             }
         `;
 
