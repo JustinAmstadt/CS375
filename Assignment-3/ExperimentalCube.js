@@ -10,6 +10,8 @@ class ExperimentalCube {
         vertexShader = `
             in vec4 aPosition;
 
+            out vec4 vColor;
+
             uniform mat4 P;
             uniform mat4 MV;
 
@@ -19,20 +21,31 @@ class ExperimentalCube {
             // gl_Instance_ID[i] / 2 to get the axis you are on
             // When you are on a certain axis, that value won't change, but the surrounding values should change in a specific pattern
 
+
             void main() {
-                gl_Position = P * MV * aPosition;
+                // int bitmap = 15637664;
+                int faceNum = gl_VertexID + gl_InstanceID;
+                vec4 newPos = aPosition;
+                if (gl_InstanceID == 1) {
+                    newPos[gl_VertexID] -= 0.5;
+                }
+                vColor[gl_InstanceID] = 1.0;
+                vColor.a = 1.0;
+                gl_Position = P * MV * newPos;
             }
         `;
 
         fragmentShader = `
             out vec4 fragColor;
+            in vec4 vColor;
 
             void main()
             {
                 const vec4 frontColor = vec4(0.0, 1.0, 0.0, 1.0);
                 const vec4 backColor = vec4(1.0, 0.0, 0.0, 1.0);
 
-                fragColor = gl_FrontFacing ? frontColor : backColor;
+                // fragColor = gl_FrontFacing ? frontColor : backColor;
+                fragColor = vColor;
             } 
         `;
 
@@ -83,13 +96,13 @@ class ExperimentalCube {
         this.draw = () => {
             program.use();
 
-            posAttribute.enable();
+            // posAttribute.enable();
             indicesBuffer.enable()
 
             gl.drawElements(gl.TRIANGLE_STRIP, indicesBuffer.count, indicesBuffer.type, 0);
 
             indicesBuffer.disable()
-            posAttribute.disable();
+            // posAttribute.disable();
         };
     }
 };
