@@ -8,29 +8,19 @@
 class ExperimentalCube {
     constructor(gl, vertexShader, fragmentShader) {
         vertexShader = `
-            in vec4 aPosition;
-
-            out vec4 vColor;
-
             uniform mat4 P;
             uniform mat4 MV;
 
-            // 0 1 - x axis
-            // 2 3 - y axis
-            // 4 5 - z axis
-            // gl_Instance_ID[i] / 2 to get the axis you are on
-            // When you are on a certain axis, that value won't change, but the surrounding values should change in a specific pattern
-
-
             void main() {
-                // int bitmap = 15637664;
-                int faceNum = gl_VertexID + gl_InstanceID;
-                vec4 newPos = aPosition;
-                if (gl_InstanceID == 1) {
-                    newPos[gl_VertexID] -= 0.5;
-                }
-                vColor[gl_InstanceID] = 1.0;
-                vColor.a = 1.0;
+                int bitmap = 15637664;
+                int bitmapShiftAmount = gl_VertexID * 3;
+
+                vec4 newPos;
+                newPos.x = ((bitmap & (1 << bitmapShiftAmount)) != 0) ? 0.5 : -0.5;
+                newPos.y = ((bitmap & (1 << bitmapShiftAmount + 1)) != 0) ? 0.5 : -0.5;
+                newPos.z = ((bitmap & (1 << bitmapShiftAmount + 2)) != 0) ? 0.5 : -0.5;
+                newPos.w = 1.0;
+
                 gl_Position = P * MV * newPos;
             }
         `;
@@ -44,24 +34,10 @@ class ExperimentalCube {
                 const vec4 frontColor = vec4(0.0, 1.0, 0.0, 1.0);
                 const vec4 backColor = vec4(1.0, 0.0, 0.0, 1.0);
 
-                // fragColor = gl_FrontFacing ? frontColor : backColor;
-                fragColor = vColor;
+                fragColor = gl_FrontFacing ? frontColor : backColor;
+                // fragColor = vColor;
             } 
         `;
-
-        let vertices = new Float32Array([
-            // Front
-            0.5, 0.5, 0.5, // Top right
-            -0.5, 0.5, 0.5, // Top left
-            0.5, -0.5, 0.5, // Bottom right
-            -0.5, -0.5, 0.5, // Bottom left
-        
-            // Back
-            0.5, 0.5, -0.5, // Top right
-            -0.5, 0.5, -0.5, // Top left
-            0.5, -0.5, -0.5, // Bottom right
-            -0.5, -0.5, -0.5 // Bottom left
-        ]);
         
         let indices = new Uint16Array([
             // Front face
@@ -90,19 +66,16 @@ class ExperimentalCube {
         ]);
         
         let program = new ShaderProgram(gl, this, vertexShader, fragmentShader);
-        let posAttribute = new Attribute(gl, program, "aPosition", vertices, 3, gl.FLOAT, false, 0, 0);
         let indicesBuffer = new Indices(gl, indices);
 
         this.draw = () => {
             program.use();
 
-            // posAttribute.enable();
             indicesBuffer.enable()
 
-            gl.drawElements(gl.TRIANGLE_STRIP, indicesBuffer.count, indicesBuffer.type, 0);
+            gl.drawElements(gl.TRIANGLES, indicesBuffer.count, indicesBuffer.type, 0);
 
             indicesBuffer.disable()
-            // posAttribute.disable();
         };
     }
 };

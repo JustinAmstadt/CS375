@@ -23,7 +23,7 @@ class IndexedCube {
 
             void main()
             {
-                const vec4 frontColor = vec4(0.0, 1.0, 0.0, 1.0);
+                const vec4 frontColor = vec4(0.0, 1.0, 1.0, 1.0);
                 const vec4 backColor = vec4(1.0, 0.0, 0.0, 1.0);
 
                 fragColor = gl_FrontFacing ? frontColor : backColor;
