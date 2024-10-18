@@ -80,7 +80,7 @@ class IndexedCube {
             posAttribute.enable();
             indicesBuffer.enable()
 
-            gl.drawElements(gl.TRIANGLES, 3, indicesBuffer.type, 0);
+            gl.drawElements(gl.TRIANGLES, indicesBuffer.count, indicesBuffer.type, 0);
 
             indicesBuffer.disable()
             posAttribute.disable();
