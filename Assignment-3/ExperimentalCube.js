@@ -46,43 +46,33 @@ class ExperimentalCube {
             } 
         `;
         
-        /*
-        let indices = new Uint16Array([
+        let indexBitmapArray = new Int16Array([
             // Front face
-            0, 1, 2,
-            1, 3, 2,
-        
+            (2 << 8) | (1 << 4) | 0,
+            (2 << 8) | (3 << 4) | 1,
+
             // Back face
-            4, 6, 5,
-            5, 6, 7,
-        
+            (5 << 8) | (6 << 4) | 4,
+            (7 << 8) | (6 << 4) | 5,
+
             // Top face
-            0, 4, 1,
-            1, 4, 5,
+            (1 << 8) | (4 << 4) | 0,
+            (5 << 8) | (4 << 4) | 1,
         
             // Bottom face
-            2, 3, 6,
-            3, 7, 6,
+            (6 << 8) | (3 << 4) | 2,
+            (6 << 8) | (7 << 4) | 3,
         
             // Left face
-            1, 5, 3,
-            3, 5, 7,
+            (3 << 8) | (5 << 4) | 1,
+            (7 << 8) | (5 << 4) | 3,
         
             // Right face
-            0, 2, 4,
-            2, 6, 4 
-        ]);
-        */
-
-        let indexBitmapArray = new Int16Array([
-            528, 561, 
-            1380, 1893,
-            
+            (4 << 8) | (2 << 4) | 0,
+            (4 << 8) | (6 << 4) | 2,
         ]);
         
         let program = new ShaderProgram(gl, this, vertexShader, fragmentShader);
-        // let indicesBuffer = new Indices(gl, indices);
-
         const uniformLocation = gl.getUniformLocation(program.program, 'indexBitmaps');
 
         this.draw = () => {
@@ -90,8 +80,7 @@ class ExperimentalCube {
 
             gl.uniform1iv(uniformLocation, indexBitmapArray);
 
-            // gl.drawElements(gl.TRIANGLES, indicesBuffer.count, indicesBuffer.type, 0);
-            gl.drawArraysInstanced(gl.TRIANGLES, 0, indexBitmapArray.length * 3, indexBitmapArray.length);
+            gl.drawArraysInstanced(gl.TRIANGLES, 0, 3, indexBitmapArray.length);
         };
     }
 };
