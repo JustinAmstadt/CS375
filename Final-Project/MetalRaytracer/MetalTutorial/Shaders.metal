@@ -2,6 +2,15 @@
 
 using namespace metal;
 
+struct Ray {
+    vector_float3 orig;
+    vector_float3 dir;
+};
+
+struct Camera {
+    vector_float3 position;
+};
+
 struct VertexIn {
     float2 position [[attribute(0)]];
     float2 texCoord [[attribute(1)]];
@@ -27,12 +36,36 @@ fragment float4 fragmentShader(VertexOut in [[stage_in]],
     return color;
 }
 
+float3 rayColor(Ray ray) {
+    vector_float3 unitDirection = normalize(ray.dir);
+    float a = 0.5f * (unitDirection.y + 1.0f);
+    return (1.0f - a) * float3(0.0f, 0.0f, 0.0f) + a * float3(0.5f, 0.7f, 1.0f);
+}
+
+Ray makeRay(float2 uv,
+            uint2 tid [[thread_position_in_grid]]) {
+    // Pixel coordinates for this thread
+    float2 pixel = (float2)tid;
+    
+    uv = uv * 2.0f - 1.0f;
+    vector_float3 pixelCenter = vector_float3(uv, 1.0f);
+    vector_float3 cameraCenter = vector_float3(0.0f, 0.0f, 0.0f);
+    
+    Ray ray;
+    ray.orig = cameraCenter;
+    ray.dir = pixelCenter - cameraCenter;
+    
+    return ray;
+}
+
 kernel void computeShader(texture2d<float, access::write> outputTexture [[texture(0)]],
-                          uint2 id [[thread_position_in_grid]]) {
-    float2 uv = float2(id) / float2(outputTexture.get_width(), outputTexture.get_height());
+                          uint2 tid [[thread_position_in_grid]]) {
+    float2 uv = float2(tid) / float2(outputTexture.get_width(), outputTexture.get_height());
+    Ray ray = makeRay(uv, tid);
+    float3 color = rayColor(ray);
     
     // Simple color gradient based on UV coordinates
-    float3 color = float3(uv.x, uv.y, 1.0);
+    // float3 color = float3(uv.x, uv.y, 0.0);
     
-    outputTexture.write(float4(color, 1.0), id);
+    outputTexture.write(float4(color, 1.0), tid);
 }
