@@ -42,13 +42,22 @@ fragment float4 fragmentShader(VertexOut in [[stage_in]],
     return color;
 }
 
-bool hitSphere(Sphere sphere, Ray ray){
-    vector_float3 oc = sphere.center - ray.orig;
+vector_float3 rayAt(Ray ray, float t) {
+    return ray.orig + t * ray.dir;
+}
+
+float hitSphere(Sphere sphere, Ray ray){
+    vector_float3 oc = ray.orig - sphere.center;
     float a = dot(ray.dir, ray.dir);
-    float b = -2.0f * dot(ray.dir, oc);
+    float h = dot(ray.dir, oc);
     float c = dot(oc, oc) - sphere.radius * sphere.radius;
-    float discriminant = b * b - 4 * a * c;
-    return (discriminant >= 0);
+    float discriminant = h * h - a * c;
+    
+    if (discriminant < 0) {
+        return -1.0;
+    } else {
+        return (h - sqrt(discriminant)) / a; // If there is a hit, return the t value of that hit
+    }
 }
 
 float3 rayColor(Ray ray) {
@@ -57,8 +66,12 @@ float3 rayColor(Ray ray) {
     sphere.radius = 0.5f;
     sphere.color = float3 (1.0f, 0.0f, 0.0f);
     
-    if (hitSphere(sphere, ray)) {
-        return sphere.color;
+    float t = hitSphere(sphere, ray);
+    
+    if (t > 0.0) {
+        vector_float3 pointOnSphere = rayAt(ray, t);
+        vector_float3 normal = normalize(pointOnSphere - sphere.center);
+        return 0.5f * (normal + 1.0f);
     }
     
     vector_float3 unitDirection = normalize(ray.dir);
@@ -86,7 +99,9 @@ kernel void computeShader(texture2d<float, access::write> outputTexture [[textur
 
     float2 pixel = (float2)tid;
     float2 uv = float2(pixel) / float2(outputTexture.get_width(), outputTexture.get_height());
+    float aspectRatio = float(outputTexture.get_width()) / float(outputTexture.get_height());
     uv = uv * 2.0f - 1.0f;
+    uv.x *= aspectRatio;
     
     Ray ray = makeRay(uv);
     float3 color = rayColor(ray);
