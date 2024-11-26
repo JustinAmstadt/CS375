@@ -29,14 +29,13 @@ struct VertexOut {
 
 vertex VertexOut vertexShader(VertexIn in [[stage_in]]) {
     VertexOut out;
-    out.position = float4(in.position, 0.0, 1.0); // Pass position directly (can transform here if needed)
-    out.texCoord = in.texCoord; // Pass texture coordinates
+    out.position = float4(in.position, 0.0, 1.0);
+    out.texCoord = in.texCoord;
     return out;
 }
 
 fragment float4 fragmentShader(VertexOut in [[stage_in]],
                                 texture2d<float, access::sample> texture [[texture(0)]]) {
-    // Sample the texture
     float4 color = texture.sample(sampler(filter::linear), in.texCoord);
     // float4 color = float4(1.0, 0.2, 0.1, 1.0);
     return color;
@@ -90,24 +89,22 @@ Ray makeRay(float2 uv) {
     return ray;
 }
 
-kernel void computeShader(texture2d<float, access::write> outputTexture [[texture(0)]],
-                          uint2 tid [[thread_position_in_grid]]) {
+kernel void computeShader(
+                          texture2d<float, access::write> outputTexture [[texture(0)]],
+                          uint2 tid [[thread_position_in_grid]],
+                          uint2 gridSize [[threads_per_grid]]
+                          ) {
     // Ensures that the thread id stays within the bounds of the texture coords
     if (tid.x >= outputTexture.get_width() || tid.y >= outputTexture.get_height()) {
         return;
     }
 
-    float2 pixel = (float2)tid;
-    float2 uv = float2(pixel) / float2(outputTexture.get_width(), outputTexture.get_height());
+    float2 uv = (float2(tid) / float2(gridSize)) * 2.0 - 1.0;
     float aspectRatio = float(outputTexture.get_width()) / float(outputTexture.get_height());
-    uv = uv * 2.0f - 1.0f;
     uv.x *= aspectRatio;
     
     Ray ray = makeRay(uv);
     float3 color = rayColor(ray);
-    
-    // Simple color gradient based on UV coordinates
-    // float3 color = float3(uv.x, uv.y, 0.0);
     
     outputTexture.write(float4(color, 1.0), tid);
 }
