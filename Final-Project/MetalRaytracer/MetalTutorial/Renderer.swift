@@ -31,7 +31,7 @@ class Renderer: NSObject, MTKViewDelegate {
         self.library = device.makeDefaultLibrary()!
         
         // Create a texture to hold the computed image
-        let textureDescriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: .rgba8Unorm,
+        let textureDescriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: .bgra8Unorm,
                                                                           width: Int(metalKitView.drawableSize.width),
                                                                           height: Int(metalKitView.drawableSize.height),
                                                                           mipmapped: false)
@@ -53,7 +53,7 @@ class Renderer: NSObject, MTKViewDelegate {
         if texture.width != Int(view.drawableSize.width) || texture.height != Int(view.drawableSize.height) {
             print("ERROR: The texture's dimensions are different from view.drawableSize dimensions!")
         }
-
+        
         let commandBuffer = self.commandQueue.makeCommandBuffer()!
         
         computePass(commandBuffer)
@@ -152,11 +152,12 @@ class Renderer: NSObject, MTKViewDelegate {
     }
     
     func makeVertexBuffer() -> MTLBuffer {
+        // Flip the y axis here
         let vertices: [Vertex] = [
-            Vertex(position: simd_float2(-1.0, -1.0), texCoord: simd_float2(0.0, 1.0)), //vertex 0
-            Vertex(position: simd_float2( 1.0, -1.0), texCoord: simd_float2(1.0, 1.0)), //vertex 1
-            Vertex(position: simd_float2( 1.0,  1.0), texCoord: simd_float2(1.0, 0.0)), //vertex 2
-            Vertex(position: simd_float2(-1.0,  1.0), texCoord: simd_float2(0.0, 0.0))  //vertex 3
+            Vertex(position: simd_float2(-1.0, 1.0), texCoord: simd_float2(0.0, 1.0)), //vertex 0
+            Vertex(position: simd_float2( 1.0, 1.0), texCoord: simd_float2(1.0, 1.0)), //vertex 1
+            Vertex(position: simd_float2( 1.0, -1.0), texCoord: simd_float2(1.0, 0.0)), //vertex 2
+            Vertex(position: simd_float2(-1.0, -1.0), texCoord: simd_float2(0.0, 0.0))  //vertex 3
         ]
 
         return device.makeBuffer(bytes: vertices,

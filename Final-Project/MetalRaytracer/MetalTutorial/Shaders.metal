@@ -71,6 +71,7 @@ float3 rayColor(Ray ray) {
         vector_float3 pointOnSphere = rayAt(ray, t);
         vector_float3 normal = normalize(pointOnSphere - sphere.center);
         return 0.5f * (normal + 1.0f);
+        // return float3(1.0f, 0.0f, 0.0f);
     }
     
     vector_float3 unitDirection = normalize(ray.dir);
