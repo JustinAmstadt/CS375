@@ -1,31 +1,8 @@
 #include <metal_stdlib>
 
+#include "Structs.metal"
+
 using namespace metal;
-
-struct Ray {
-    vector_float3 orig;
-    vector_float3 dir;
-};
-
-struct Sphere {
-    vector_float3 center;
-    float radius;
-    float3 color;
-};
-
-struct Camera {
-    vector_float3 position;
-};
-
-struct VertexIn {
-    float2 position [[attribute(0)]];
-    float2 texCoord [[attribute(1)]];
-};
-
-struct VertexOut {
-    float4 position [[position]];
-    float2 texCoord;
-};
 
 vertex VertexOut vertexShader(VertexIn in [[stage_in]]) {
     VertexOut out;
@@ -59,19 +36,31 @@ float hitSphere(Sphere sphere, Ray ray){
     }
 }
 
-float3 rayColor(device const Sphere *spheres, Ray ray) {
-    float t = hitSphere(spheres[0], ray);
+float3 rayColor(device const Sphere *spheres, uint sphereCount, Ray ray) {
+    float3 outColor;
+    bool isHit = false;
+    float closest = INFINITY;
     
-    if (t > 0.0) {
-        // vector_float3 pointOnSphere = rayAt(ray, t);
-        // vector_float3 normal = normalize(pointOnSphere - spheres[0].center);
-        // return 0.5f * (normal + 1.0f);
-        return spheres[0].color;
+    for (uint i = 0; i < sphereCount; i++) {
+        float t = hitSphere(spheres[i], ray);
+        
+        if (t > 0.0 && t < closest) {
+            // vector_float3 pointOnSphere = rayAt(ray, t);
+            // vector_float3 normal = normalize(pointOnSphere - spheres[0].center);
+            // return 0.5f * (normal + 1.0f);
+            outColor = spheres[i].color;
+            isHit = true;
+            closest = t;
+        }
     }
     
-    vector_float3 unitDirection = normalize(ray.dir);
-    float a = 0.5f * (unitDirection.y + 1.0f);
-    return (1.0f - a) * float3(1.0f, 1.0f, 1.0f) + a * float3(0.5f, 0.7f, 1.0f);
+    if (isHit) {
+        return outColor;
+    } else {
+        vector_float3 unitDirection = normalize(ray.dir);
+        float a = 0.5f * (unitDirection.y + 1.0f);
+        return (1.0f - a) * float3(1.0f, 1.0f, 1.0f) + a * float3(0.5f, 0.7f, 1.0f);
+    }
 }
 
 Ray makeRay(float2 uv) {
@@ -88,6 +77,7 @@ Ray makeRay(float2 uv) {
 kernel void computeShader(
                           texture2d<float, access::write> outputTexture [[texture(0)]],
                           device const Sphere *spheres [[buffer(0)]],
+                          constant uint& sphereCount [[buffer(1)]],
                           uint2 tid [[thread_position_in_grid]],
                           uint2 gridSize [[threads_per_grid]]
                           ) {
@@ -101,7 +91,7 @@ kernel void computeShader(
     uv.x *= aspectRatio;
     
     Ray ray = makeRay(uv);
-    float3 color = rayColor(spheres, ray);
+    float3 color = rayColor(spheres, sphereCount, ray);
     
     outputTexture.write(float4(color, 1.0), tid);
 }

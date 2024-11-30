@@ -91,12 +91,7 @@ class Renderer: NSObject, MTKViewDelegate {
         computeEncoder.setComputePipelineState(computePipeline)
         computeEncoder.setTexture(texture, index: 0)
         
-        var sphere = Sphere(center: vector_float3(0, 0, -1), radius: 0.5, color: vector_float3(1, 0, 0))
-        let buffer = device.makeBuffer(bytes: &sphere,
-                                       length: MemoryLayout<Sphere>.stride,
-                                       options: .storageModeShared)
-
-        computeEncoder.setBuffer(buffer, offset: 0, index: 0)
+        setComputeBuffers(computeEncoder)
         
         // Dispatch threads
         let width = computePipeline.threadExecutionWidth
@@ -109,6 +104,29 @@ class Renderer: NSObject, MTKViewDelegate {
         )
         computeEncoder.dispatchThreadgroups(threadGroups, threadsPerThreadgroup: threadGroupSize)
         computeEncoder.endEncoding()
+    }
+    
+    func setComputeBuffers(_ computeEncoder: MTLComputeCommandEncoder) {
+        var spheres: [Sphere] = [
+            Sphere(center: vector_float3(0, 0, -1.0), radius: 0.5, color: vector_float3(1, 0, 0)),
+            Sphere(center: vector_float3(0, -5.0, -5.0), radius: 1.0, color: vector_float3(1, 1, 0)),
+            Sphere(center: vector_float3(-2.5, -1.5, -4.0), radius: 1.0, color: vector_float3(1, 0, 1)),
+        ]
+        
+        let buffer = device.makeBuffer(bytes: &spheres,
+                                       length: MemoryLayout<Sphere>.stride * spheres.count,
+                                       options: .storageModeShared)
+
+        computeEncoder.setBuffer(buffer, offset: 0, index: 0)
+        
+        var sphereCount = UInt32(spheres.count)
+        let sphereCountBuffer = device.makeBuffer(bytes: &sphereCount,
+                                                  length: MemoryLayout<UInt32>.stride,
+                                                  options: .storageModeShared)
+
+        // Pass the count buffer to the shader
+        computeEncoder.setBuffer(sphereCountBuffer, offset: 0, index: 1)
+        
     }
     
     func renderPass(_ view: MTKView, _ commandBuffer: MTLCommandBuffer) {
