@@ -59,19 +59,14 @@ float hitSphere(Sphere sphere, Ray ray){
     }
 }
 
-float3 rayColor(Ray ray) {
-    Sphere sphere;
-    sphere.center = vector_float3(0.0f, 0.0f, -1.0f);
-    sphere.radius = 0.5f;
-    sphere.color = float3 (1.0f, 0.0f, 0.0f);
-    
-    float t = hitSphere(sphere, ray);
+float3 rayColor(device const Sphere *spheres, Ray ray) {
+    float t = hitSphere(spheres[0], ray);
     
     if (t > 0.0) {
-        vector_float3 pointOnSphere = rayAt(ray, t);
-        vector_float3 normal = normalize(pointOnSphere - sphere.center);
-        return 0.5f * (normal + 1.0f);
-        // return float3(1.0f, 0.0f, 0.0f);
+        // vector_float3 pointOnSphere = rayAt(ray, t);
+        // vector_float3 normal = normalize(pointOnSphere - spheres[0].center);
+        // return 0.5f * (normal + 1.0f);
+        return spheres[0].color;
     }
     
     vector_float3 unitDirection = normalize(ray.dir);
@@ -92,6 +87,7 @@ Ray makeRay(float2 uv) {
 
 kernel void computeShader(
                           texture2d<float, access::write> outputTexture [[texture(0)]],
+                          device const Sphere *spheres [[buffer(0)]],
                           uint2 tid [[thread_position_in_grid]],
                           uint2 gridSize [[threads_per_grid]]
                           ) {
@@ -105,7 +101,7 @@ kernel void computeShader(
     uv.x *= aspectRatio;
     
     Ray ray = makeRay(uv);
-    float3 color = rayColor(ray);
+    float3 color = rayColor(spheres, ray);
     
     outputTexture.write(float4(color, 1.0), tid);
 }

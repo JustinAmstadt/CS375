@@ -7,6 +7,12 @@ struct Vertex {
     var texCoord: simd_float2
 }
 
+struct Sphere {
+    var center: vector_float3
+    var radius: Float
+    var color: vector_float3
+}
+
 class Renderer: NSObject, MTKViewDelegate {
     var device: MTLDevice
     var commandQueue: MTLCommandQueue
@@ -84,6 +90,13 @@ class Renderer: NSObject, MTKViewDelegate {
         let computeEncoder = commandBuffer.makeComputeCommandEncoder()!
         computeEncoder.setComputePipelineState(computePipeline)
         computeEncoder.setTexture(texture, index: 0)
+        
+        var sphere = Sphere(center: vector_float3(0, 0, -1), radius: 0.5, color: vector_float3(1, 0, 0))
+        let buffer = device.makeBuffer(bytes: &sphere,
+                                       length: MemoryLayout<Sphere>.stride,
+                                       options: .storageModeShared)
+
+        computeEncoder.setBuffer(buffer, offset: 0, index: 0)
         
         // Dispatch threads
         let width = computePipeline.threadExecutionWidth
