@@ -19,6 +19,19 @@ struct Sphere {
     float3 color;
 };
 
+struct Plane {
+    vector_float3 center;
+    vector_float3 normal;
+    float3 color;
+};
+
+struct Disk {
+    vector_float3 center;
+    vector_float3 normal;
+    float radius;
+    float3 color;
+};
+
 struct Camera {
     vector_float3 position;
 };

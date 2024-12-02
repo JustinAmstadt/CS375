@@ -36,6 +36,43 @@ float hitSphere(Sphere sphere, Ray ray){
     }
 }
 
+float hitPlane(vector_float3 planeNormal, vector_float3 planePoint, Ray ray) {
+    float denom = dot(ray.dir, planeNormal);
+    
+    // Check if ray is parallel to plane
+    if (fabs(denom) < 1e-6f) {
+        return -1.0;
+    }
+    
+    float t = dot(planePoint - ray.orig, planeNormal) / denom;
+    
+    return (t < 0.0f) ? -1.0f : t;
+}
+
+float hitPlane(Plane plane, Ray ray) {
+    return hitPlane(plane.normal, plane.center, ray);
+}
+
+float hitPlane(Disk disk, Ray ray) {
+    return hitPlane(disk.normal, disk.center, ray);
+}
+
+float hitDisk(Disk disk, Ray ray) {
+    float t = hitPlane(disk, ray);
+    if (t > 0.0f) {
+        vector_float3 intersectionPoint = rayAt(ray, t);
+        vector_float3 fromCenter = disk.center - intersectionPoint; // Vector from disk center to intersection point
+        float distanceSqrd = dot(fromCenter, fromCenter); // Distance squared from intersection point to disk center
+        return (distanceSqrd <= disk.radius * disk.radius) ? t : -1.0f;
+    }
+    
+    return -1.0f;
+}
+
+bool isNewColor(float t, float closest) {
+    return t > 0.0 && t < closest;
+}
+
 float3 rayColor(device const Sphere *spheres, uint sphereCount, Ray ray) {
     float3 outColor;
     bool isHit = false;
@@ -44,7 +81,7 @@ float3 rayColor(device const Sphere *spheres, uint sphereCount, Ray ray) {
     for (uint i = 0; i < sphereCount; i++) {
         float t = hitSphere(spheres[i], ray);
         
-        if (t > 0.0 && t < closest) {
+        if (isNewColor(t, closest)) {
             // vector_float3 pointOnSphere = rayAt(ray, t);
             // vector_float3 normal = normalize(pointOnSphere - spheres[0].center);
             // return 0.5f * (normal + 1.0f);
@@ -54,6 +91,33 @@ float3 rayColor(device const Sphere *spheres, uint sphereCount, Ray ray) {
         }
     }
     
+    Plane plane;
+    plane.center = vector_float3(0.0f, 0.0f, 5.0f);
+    plane.normal = normalize(vector_float3(0.0f, 0.0f, 1.0f));
+    plane.color = float3(0.0f, 1.0f, 0.0f);
+    
+    float t = hitPlane(plane, ray);
+    
+    if (isNewColor(t, closest)) {
+        outColor = plane.color;
+        isHit = true;
+        closest = t;
+    }
+    
+    Disk disk;
+    disk.center = vector_float3(-0.8f, -0.3f, 1.0f);
+    disk.normal = normalize(vector_float3(1.0f, 0.0f, 1.0f));
+    disk.color = float3(1.0f, 1.0f, 1.0f);
+    disk.radius = 0.4f;
+    
+    t = hitDisk(disk, ray);
+    
+    if (isNewColor(t, closest)) {
+        outColor = disk.color;
+        isHit = true;
+        closest = t;
+    }
+
     if (isHit) {
         return outColor;
     } else {
@@ -86,12 +150,12 @@ kernel void computeShader(
         return;
     }
 
-    float2 uv = (float2(tid) / float2(gridSize)) * 2.0 - 1.0;
+    float2 uv = (float2(tid) / float2(gridSize)) * 2.0f - 1.0f;
     float aspectRatio = float(outputTexture.get_width()) / float(outputTexture.get_height());
     uv.x *= aspectRatio;
     
     Ray ray = makeRay(uv);
     float3 color = rayColor(spheres, sphereCount, ray);
     
-    outputTexture.write(float4(color, 1.0), tid);
+    outputTexture.write(float4(color, 1.0f), tid);
 }
