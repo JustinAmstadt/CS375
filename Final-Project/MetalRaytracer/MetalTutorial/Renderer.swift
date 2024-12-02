@@ -108,7 +108,7 @@ class Renderer: NSObject, MTKViewDelegate {
     
     func setComputeBuffers(_ computeEncoder: MTLComputeCommandEncoder) {
         var spheres: [Sphere] = [
-            Sphere(center: vector_float3(0, 0, -1.0), radius: 0.5, color: vector_float3(1, 0, 0)),
+            Sphere(center: vector_float3(0, 0, -2.0), radius: 0.5, color: vector_float3(1, 0, 0)),
             Sphere(center: vector_float3(0, -5.0, -5.0), radius: 1.0, color: vector_float3(1, 1, 0)),
             Sphere(center: vector_float3(-2.5, -1.5, -4.0), radius: 1.0, color: vector_float3(1, 0, 1)),
         ]

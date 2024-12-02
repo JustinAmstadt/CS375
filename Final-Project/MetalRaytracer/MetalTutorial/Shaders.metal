@@ -57,6 +57,12 @@ float hitPlane(Disk disk, Ray ray) {
     return hitPlane(disk.normal, disk.center, ray);
 }
 
+float hitPlane(Triangle triangle, vector_float3 edge1, vector_float3 edge2, Ray ray) {
+    // Compute the triangle's normal
+    vector_float3 normal = cross(edge1, edge2);
+    return hitPlane(normal, triangle.v0, ray);
+}
+
 float hitDisk(Disk disk, Ray ray) {
     float t = hitPlane(disk, ray);
     if (t > 0.0f) {
@@ -68,6 +74,37 @@ float hitDisk(Disk disk, Ray ray) {
     
     return -1.0f;
 }
+
+float hitTriangle(Triangle triangle, Ray ray) {
+    // Compute edges
+    vector_float3 edge1 = triangle.v1 - triangle.v0;
+    vector_float3 edge2 = triangle.v2 - triangle.v0;
+
+    float t = hitPlane(triangle, edge1, edge2, ray);
+    
+    if (t <= 0.0f) {
+        return -1.0f; // Point is outside the triangle
+    }
+
+    // Compute intersection point
+    vector_float3 p = rayAt(ray, t);
+
+    // Check if the point is inside the triangle using barycentric coordinates
+    vector_float3 v0p = p - triangle.v0;
+    float d00 = dot(edge1, edge1);
+    float d01 = dot(edge1, edge2);
+    float d11 = dot(edge2, edge2);
+    float d20 = dot(v0p, edge1);
+    float d21 = dot(v0p, edge2);
+
+    float denomBary = d00 * d11 - d01 * d01;
+    float u = (d11 * d20 - d01 * d21) / denomBary;
+    float v = (d00 * d21 - d01 * d20) / denomBary;
+
+    // If u, v, and (u + v) are all in [0, 1], the point is inside the triangle
+    return (u >= 0.0f && v >= 0.0f && (u + v) <= 1.0f) ? t : -1.0f;
+}
+
 
 bool isNewColor(float t, float closest) {
     return t > 0.0 && t < closest;
@@ -114,6 +151,20 @@ float3 rayColor(device const Sphere *spheres, uint sphereCount, Ray ray) {
     
     if (isNewColor(t, closest)) {
         outColor = disk.color;
+        isHit = true;
+        closest = t;
+    }
+    
+    Triangle triangle;
+    triangle.v0 = vector_float3(-0.8f, -0.8f, 2.0f);
+    triangle.v1 = vector_float3(0.8f, -0.8f, 2.0f);
+    triangle.v2 = vector_float3(0.8f, 0.8f, 2.0f);
+    triangle.color = float3(1.0f, 1.0f, 0.0f);
+    
+    t = hitTriangle(triangle, ray);
+    
+    if (isNewColor(t, closest)) {
+        outColor = triangle.color;
         isHit = true;
         closest = t;
     }

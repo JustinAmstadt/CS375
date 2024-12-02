@@ -32,6 +32,13 @@ struct Disk {
     float3 color;
 };
 
+struct Triangle {
+    vector_float3 v0;
+    vector_float3 v1;
+    vector_float3 v2;
+    float3 color;
+};
+
 struct Camera {
     vector_float3 position;
 };
