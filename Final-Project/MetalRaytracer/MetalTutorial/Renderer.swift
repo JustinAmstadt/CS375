@@ -2,17 +2,6 @@ import Metal
 import MetalKit
 import simd
 
-struct Vertex {
-    var position: simd_float2
-    var texCoord: simd_float2
-}
-
-struct Sphere {
-    var center: vector_float3
-    var radius: Float
-    var color: vector_float3
-}
-
 class Renderer: NSObject, MTKViewDelegate {
     var device: MTLDevice
     var commandQueue: MTLCommandQueue
@@ -26,7 +15,7 @@ class Renderer: NSObject, MTKViewDelegate {
     
     var texture: MTLTexture
     
-    var indices: [ushort]
+    var quadIndices: [ushort]
     
     init?(metalKitView: MTKView) {
         //Device and command queue
@@ -44,15 +33,12 @@ class Renderer: NSObject, MTKViewDelegate {
         textureDescriptor.usage = [.shaderWrite, .shaderRead, .renderTarget]
         self.texture = device.makeTexture(descriptor: textureDescriptor)!
         
-        indices = [
+        quadIndices = [
             0, 1, 2,
             0, 2, 3
         ]
         
-        self.indexBuffer = self.device.makeBuffer(bytes: indices, length: indices.count * MemoryLayout.stride(ofValue: indices[0]), options: MTLResourceOptions.storageModeShared)!
-        
-        let data = getObjData(objFile: "teapot.obj")
-        print(data)
+        self.indexBuffer = self.device.makeBuffer(bytes: quadIndices, length: quadIndices.count * MemoryLayout.stride(ofValue: quadIndices[0]), options: MTLResourceOptions.storageModeShared)!
         
         super.init()
     }
@@ -110,26 +96,72 @@ class Renderer: NSObject, MTKViewDelegate {
     }
     
     func setComputeBuffers(_ computeEncoder: MTLComputeCommandEncoder) {
-        var spheres: [Sphere] = [
-            Sphere(center: vector_float3(0, 0, -2.0), radius: 0.5, color: vector_float3(1, 0, 0)),
-            Sphere(center: vector_float3(0, -5.0, -5.0), radius: 1.0, color: vector_float3(1, 1, 0)),
-            Sphere(center: vector_float3(-2.5, -1.5, -4.0), radius: 1.0, color: vector_float3(1, 0, 1)),
+        // Spheres
+        
+        let spheres: [Sphere] = [
+            Sphere(center: vector_float3(0, 0, -2.0), radius: 0.5, color: simd_float3(1, 0, 0)),
+            Sphere(center: vector_float3(0, -5.0, -5.0), radius: 1.0, color: simd_float3(1, 1, 0)),
+            Sphere(center: vector_float3(-2.5, -1.5, -4.0), radius: 1.0, color: simd_float3(1, 0, 1)),
         ]
         
-        let buffer = device.makeBuffer(bytes: &spheres,
-                                       length: MemoryLayout<Sphere>.stride * spheres.count,
-                                       options: .storageModeShared)
+        let sphereBuffer: SphereBuffer = SphereBuffer(device: device, spheres: spheres)
 
-        computeEncoder.setBuffer(buffer, offset: 0, index: 0)
+        computeEncoder.setBuffer(sphereBuffer.buffer, offset: 0, index: 0)
+        computeEncoder.setBuffer(sphereBuffer.countBuffer, offset: 0, index: 1)
         
-        var sphereCount = UInt32(spheres.count)
-        let sphereCountBuffer = device.makeBuffer(bytes: &sphereCount,
-                                                  length: MemoryLayout<UInt32>.stride,
-                                                  options: .storageModeShared)
-
-        // Pass the count buffer to the shader
-        computeEncoder.setBuffer(sphereCountBuffer, offset: 0, index: 1)
+        // Planes
         
+        let planes: [Plane] = [
+            Plane(center: vector_float3(0.0, 0.0, 5.0), normal: normalize(vector_float3(0.0, 0.0, 1.0)), color: simd_float3(0.0, 1.0, 0.0))
+        ]
+        
+        let planeBuffer: PlaneBuffer = PlaneBuffer(device: device, planes: planes)
+        
+        computeEncoder.setBuffer(planeBuffer.buffer, offset: 0, index: 2)
+        computeEncoder.setBuffer(planeBuffer.countBuffer, offset: 0, index: 3)
+        
+        // Disks
+        
+        let disks: [Disk] = [
+            Disk(center: vector_float3(-0.8, -0.3, 1.0), normal: normalize(vector_float3(1.0, 0.0, 1.0)),
+            radius: 0.4, color: simd_float3(1.0, 1.0, 1.0))
+        ]
+        
+        let diskBuffer: DiskBuffer = DiskBuffer(device: device, disks: disks)
+        
+        computeEncoder.setBuffer(diskBuffer.buffer, offset: 0, index: 4)
+        computeEncoder.setBuffer(diskBuffer.countBuffer, offset: 0, index: 5)
+        
+        // Triangles
+        
+        let triangles: [Triangle] = [
+            Triangle(v0: vector_float3(-0.8, -0.8, 2.0), v1: vector_float3(0.8, -0.8, 2.0), v2: vector_float3(0.8, 0.8, 2.0), color: simd_float3(1.0, 1.0, 0.0))
+        ]
+        
+        let triangleBuffer: TriangleBuffer = TriangleBuffer(device: device, triangles: triangles)
+        
+        computeEncoder.setBuffer(triangleBuffer.buffer, offset: 0, index: 6)
+        computeEncoder.setBuffer(triangleBuffer.countBuffer, offset: 0, index: 7)
+        
+        // Models
+        
+        var vertices: [vector_float3] = []
+        var indices: [UInt32] = []
+        
+        // Keep doing this on these arrays to get the full list of model values packed into these two arrays
+        let teapotModel = getObjData(objFile: "teapot.obj", verts: &vertices, indices: &indices)
+        
+        let models: [Model] = [
+            teapotModel
+        ]
+        
+        let modelData = ModelDataBuffer(device: device, vertices: vertices, indices: indices)
+        let modelBuffer = ModelBuffer(device: device, models: models)
+        
+        computeEncoder.setBuffer(modelBuffer.buffer, offset: 0, index: 8)
+        computeEncoder.setBuffer(modelBuffer.countBuffer, offset: 0, index: 9)
+        computeEncoder.setBuffer(modelData.verticesBuffer, offset: 0, index: 10)
+        computeEncoder.setBuffer(modelData.indicesBuffer, offset: 0, index: 11)
     }
     
     func renderPass(_ view: MTKView, _ commandBuffer: MTLCommandBuffer) {

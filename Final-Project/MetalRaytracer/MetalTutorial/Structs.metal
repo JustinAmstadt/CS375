@@ -5,6 +5,9 @@
 //  Created by Justin A on 11/30/24.
 //
 
+#ifndef STRUCTS_METAL
+#define STRUCTS_METAL
+
 #include <metal_stdlib>
 using namespace metal;
 
@@ -39,6 +42,12 @@ struct Triangle {
     float3 color;
 };
 
+struct Model {
+    int vertexOffset;
+    int indexOffset;
+    uint indexCount;
+};
+
 struct Camera {
     vector_float3 position;
 };
@@ -53,3 +62,4 @@ struct VertexOut {
     float2 texCoord;
 };
 
+#endif

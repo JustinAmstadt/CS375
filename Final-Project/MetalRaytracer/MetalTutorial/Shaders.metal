@@ -1,4 +1,14 @@
+//
+//  Shaders.metal
+//  MetalRaytracer
+//
+//  Created by Justin A on 12/2/24.
+//
+
 #include <metal_stdlib>
+
+#include "HitCheck.h"
+#include "Ray.h"
 
 #include "Structs.metal"
 
@@ -18,156 +28,67 @@ fragment float4 fragmentShader(VertexOut in [[stage_in]],
     return color;
 }
 
-vector_float3 rayAt(Ray ray, float t) {
-    return ray.orig + t * ray.dir;
-}
-
-float hitSphere(Sphere sphere, Ray ray){
-    vector_float3 oc = ray.orig - sphere.center;
-    float a = dot(ray.dir, ray.dir);
-    float h = dot(ray.dir, oc);
-    float c = dot(oc, oc) - sphere.radius * sphere.radius;
-    float discriminant = h * h - a * c;
-    
-    if (discriminant < 0) {
-        return -1.0;
-    } else {
-        return (h - sqrt(discriminant)) / a; // If there is a hit, return the t value of that hit
-    }
-}
-
-float hitPlane(vector_float3 planeNormal, vector_float3 planePoint, Ray ray) {
-    float denom = dot(ray.dir, planeNormal);
-    
-    // Check if ray is parallel to plane
-    if (fabs(denom) < 1e-6f) {
-        return -1.0;
-    }
-    
-    float t = dot(planePoint - ray.orig, planeNormal) / denom;
-    
-    return (t < 0.0f) ? -1.0f : t;
-}
-
-float hitPlane(Plane plane, Ray ray) {
-    return hitPlane(plane.normal, plane.center, ray);
-}
-
-float hitPlane(Disk disk, Ray ray) {
-    return hitPlane(disk.normal, disk.center, ray);
-}
-
-float hitPlane(Triangle triangle, vector_float3 edge1, vector_float3 edge2, Ray ray) {
-    // Compute the triangle's normal
-    vector_float3 normal = cross(edge1, edge2);
-    return hitPlane(normal, triangle.v0, ray);
-}
-
-float hitDisk(Disk disk, Ray ray) {
-    float t = hitPlane(disk, ray);
-    if (t > 0.0f) {
-        vector_float3 intersectionPoint = rayAt(ray, t);
-        vector_float3 fromCenter = disk.center - intersectionPoint; // Vector from disk center to intersection point
-        float distanceSqrd = dot(fromCenter, fromCenter); // Distance squared from intersection point to disk center
-        return (distanceSqrd <= disk.radius * disk.radius) ? t : -1.0f;
-    }
-    
-    return -1.0f;
-}
-
-float hitTriangle(Triangle triangle, Ray ray) {
-    // Compute edges
-    vector_float3 edge1 = triangle.v1 - triangle.v0;
-    vector_float3 edge2 = triangle.v2 - triangle.v0;
-
-    float t = hitPlane(triangle, edge1, edge2, ray);
-    
-    if (t <= 0.0f) {
-        return -1.0f; // Point is outside the triangle
-    }
-
-    // Compute intersection point
-    vector_float3 p = rayAt(ray, t);
-
-    // Check if the point is inside the triangle using barycentric coordinates
-    vector_float3 v0p = p - triangle.v0;
-    float d00 = dot(edge1, edge1);
-    float d01 = dot(edge1, edge2);
-    float d11 = dot(edge2, edge2);
-    float d20 = dot(v0p, edge1);
-    float d21 = dot(v0p, edge2);
-
-    float denomBary = d00 * d11 - d01 * d01;
-    float u = (d11 * d20 - d01 * d21) / denomBary;
-    float v = (d00 * d21 - d01 * d20) / denomBary;
-
-    // If u, v, and (u + v) are all in [0, 1], the point is inside the triangle
-    return (u >= 0.0f && v >= 0.0f && (u + v) <= 1.0f) ? t : -1.0f;
-}
-
-
 bool isNewColor(float t, float closest) {
     return t > 0.0 && t < closest;
 }
 
-float3 rayColor(device const Sphere *spheres, uint sphereCount, Ray ray) {
+float3 rayColor(device const Sphere *spheres, uint sphereCount, device const Plane *planes, constant uint& planeCount, device const Disk *disks, constant uint& diskCount, device const Triangle *triangles, constant uint& triangleCount, device const Model *models, constant uint& modelCount, device const vector_float3 *vertices, device const uint *indices, Ray ray) {
     float3 outColor;
     bool isHit = false;
     float closest = INFINITY;
     
-    for (uint i = 0; i < sphereCount; i++) {
-        float t = hitSphere(spheres[i], ray);
+    /*
+    for (uint i = 0; i < planeCount; i++) {
+        float t = hitPlane(planes[i], ray);
         
         if (isNewColor(t, closest)) {
-            // vector_float3 pointOnSphere = rayAt(ray, t);
-            // vector_float3 normal = normalize(pointOnSphere - spheres[0].center);
-            // return 0.5f * (normal + 1.0f);
-            outColor = spheres[i].color;
+            outColor = planes[i].color;
+            isHit = true;
+            closest = t;
+        }
+    }*/
+    /*
+     for (uint i = 0; i < sphereCount; i++) {
+         float t = hitSphere(spheres[i], ray);
+         
+         if (isNewColor(t, closest)) {
+             outColor = spheres[i].color;
+             isHit = true;
+             closest = t;
+         }
+     }
+     
+    for (uint i = 0; i < diskCount; i++) {
+        float t = hitDisk(disks[i], ray);
+        
+        if (isNewColor(t, closest)) {
+            outColor = disks[i].color;
+            isHit = true;
+            closest = t;
+        }
+    }
+     
+     */
+    for (uint i = 0; i < triangleCount; i++) {
+        float t = hitTriangle(triangles[i], ray);
+        
+        if (isNewColor(t, closest)) {
+            outColor = triangles[i].color;
+            isHit = true;
+            closest = t;
+        }
+    }
+    for (uint i = 0; i < modelCount; i++) {
+        float t = hitModel(models[i], vertices, indices, ray);
+        
+        if (isNewColor(t, closest)) {
+            outColor = float3(1.0f, 0.0f, 0.0f);
             isHit = true;
             closest = t;
         }
     }
     
-    Plane plane;
-    plane.center = vector_float3(0.0f, 0.0f, 5.0f);
-    plane.normal = normalize(vector_float3(0.0f, 0.0f, 1.0f));
-    plane.color = float3(0.0f, 1.0f, 0.0f);
-    
-    float t = hitPlane(plane, ray);
-    
-    if (isNewColor(t, closest)) {
-        outColor = plane.color;
-        isHit = true;
-        closest = t;
-    }
-    
-    Disk disk;
-    disk.center = vector_float3(-0.8f, -0.3f, 1.0f);
-    disk.normal = normalize(vector_float3(1.0f, 0.0f, 1.0f));
-    disk.color = float3(1.0f, 1.0f, 1.0f);
-    disk.radius = 0.4f;
-    
-    t = hitDisk(disk, ray);
-    
-    if (isNewColor(t, closest)) {
-        outColor = disk.color;
-        isHit = true;
-        closest = t;
-    }
-    
-    Triangle triangle;
-    triangle.v0 = vector_float3(-0.8f, -0.8f, 2.0f);
-    triangle.v1 = vector_float3(0.8f, -0.8f, 2.0f);
-    triangle.v2 = vector_float3(0.8f, 0.8f, 2.0f);
-    triangle.color = float3(1.0f, 1.0f, 0.0f);
-    
-    t = hitTriangle(triangle, ray);
-    
-    if (isNewColor(t, closest)) {
-        outColor = triangle.color;
-        isHit = true;
-        closest = t;
-    }
+    // if (models[0].indexCount > 18959) return float3(1.0f, 0.0f, 0.0f);
 
     if (isHit) {
         return outColor;
@@ -180,7 +101,7 @@ float3 rayColor(device const Sphere *spheres, uint sphereCount, Ray ray) {
 
 Ray makeRay(float2 uv) {
     vector_float3 pixelCenter = vector_float3(uv, 1.0f);
-    vector_float3 cameraCenter = vector_float3(0.0f, 0.0f, 0.0f);
+    vector_float3 cameraCenter = vector_float3(0.0f, 0.0f, 5.0f);
     
     Ray ray;
     ray.orig = cameraCenter;
@@ -193,6 +114,16 @@ kernel void computeShader(
                           texture2d<float, access::write> outputTexture [[texture(0)]],
                           device const Sphere *spheres [[buffer(0)]],
                           constant uint& sphereCount [[buffer(1)]],
+                          device const Plane *planes [[buffer(2)]],
+                          constant uint& planeCount [[buffer(3)]],
+                          device const Disk *disks [[buffer(4)]],
+                          constant uint& diskCount [[buffer(5)]],
+                          device const Triangle *triangles [[buffer(6)]],
+                          constant uint& triangleCount [[buffer(7)]],
+                          device const Model *models [[buffer(8)]],
+                          constant uint& modelCount [[buffer(9)]],
+                          device const vector_float3 *vertices [[buffer(10)]],
+                          device const uint *indices [[buffer(11)]],
                           uint2 tid [[thread_position_in_grid]],
                           uint2 gridSize [[threads_per_grid]]
                           ) {
@@ -200,13 +131,13 @@ kernel void computeShader(
     if (tid.x >= outputTexture.get_width() || tid.y >= outputTexture.get_height()) {
         return;
     }
-
+                              
     float2 uv = (float2(tid) / float2(gridSize)) * 2.0f - 1.0f;
     float aspectRatio = float(outputTexture.get_width()) / float(outputTexture.get_height());
     uv.x *= aspectRatio;
     
     Ray ray = makeRay(uv);
-    float3 color = rayColor(spheres, sphereCount, ray);
+    float3 color = rayColor(spheres, sphereCount, planes, planeCount, disks, diskCount, triangles, triangleCount, models, modelCount, vertices, indices, ray);
     
     outputTexture.write(float4(color, 1.0f), tid);
 }

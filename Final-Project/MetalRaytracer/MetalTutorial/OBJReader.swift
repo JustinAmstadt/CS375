@@ -6,11 +6,13 @@
 //
 
 import Foundation
+import simd
 
 // Gets the vertices and indicies from the obj file
-func getObjData(objFile: String) -> (verts: [Float], indices: [Int]) {
-    var verts: [Float] = []
-    var indices: [Int] = []
+func getObjData(objFile: String, verts: inout [vector_float3], indices: inout [UInt32]) -> Model {
+    var vertexOffset: Int = verts.count
+    var indexOffset: Int = indices.count
+    var indexCount: UInt32 = 0
     
     if let filePath = Bundle.main.path(forResource: "teapot", ofType: "obj") {
         do {
@@ -26,12 +28,13 @@ func getObjData(objFile: String) -> (verts: [Float], indices: [Int]) {
                     let x = Float(components[1]) ?? 0.0
                     let y = Float(components[2]) ?? 0.0
                     let z = Float(components[3]) ?? 0.0
-                    verts.append(contentsOf: [x, y, z])
+                    verts.append(vector_float3(x, y, z))
                 case "f": // Face
-                    let v1 = Int(components[1]) ?? 0;
-                    let v2 = Int(components[2]) ?? 0;
-                    let v3 = Int(components[3]) ?? 0;
+                    let v1 = UInt32(components[1]) ?? 0;
+                    let v2 = UInt32(components[2]) ?? 0;
+                    let v3 = UInt32(components[3]) ?? 0;
                     indices.append(contentsOf: [v1, v2, v3])
+                    indexCount += 3
                 default:
                     break
                 }
@@ -42,6 +45,6 @@ func getObjData(objFile: String) -> (verts: [Float], indices: [Int]) {
     } else {
         print("File not found in bundle.")
     }
-
-    return (verts, indices)
+    
+    return Model(vertexOffset: vertexOffset, indexOffset: indexOffset, indexCount: indexCount)
 }
