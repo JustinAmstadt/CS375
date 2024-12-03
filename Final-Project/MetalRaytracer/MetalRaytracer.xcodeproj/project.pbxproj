@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		D0BB77B92CFBD186001E2A8A /* Structs.metal in Sources */ = {isa = PBXBuildFile; fileRef = D0BB77B82CFBD186001E2A8A /* Structs.metal */; };
+		D0BB77BD2CFE7ACA001E2A8A /* teapot.obj in Resources */ = {isa = PBXBuildFile; fileRef = D0BB77BC2CFE7ACA001E2A8A /* teapot.obj */; };
+		D0BB77BF2CFE7AF8001E2A8A /* OBJReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0BB77BE2CFE7AF8001E2A8A /* OBJReader.swift */; };
 		D8B4B2D82AF573A40053AAE4 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8B4B2D72AF573A40053AAE4 /* AppDelegate.swift */; };
 		D8B4B2DA2AF573A40053AAE4 /* GameViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8B4B2D92AF573A40053AAE4 /* GameViewController.swift */; };
 		D8B4B2DC2AF573A40053AAE4 /* Renderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8B4B2DB2AF573A40053AAE4 /* Renderer.swift */; };
@@ -19,6 +21,8 @@
 
 /* Begin PBXFileReference section */
 		D0BB77B82CFBD186001E2A8A /* Structs.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = Structs.metal; sourceTree = "<group>"; };
+		D0BB77BC2CFE7ACA001E2A8A /* teapot.obj */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = teapot.obj; sourceTree = "<group>"; };
+		D0BB77BE2CFE7AF8001E2A8A /* OBJReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OBJReader.swift; sourceTree = "<group>"; };
 		D8B4B2D42AF573A40053AAE4 /* MetalRaytracer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MetalRaytracer.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D8B4B2D72AF573A40053AAE4 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		D8B4B2D92AF573A40053AAE4 /* GameViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameViewController.swift; sourceTree = "<group>"; };
@@ -64,11 +68,13 @@
 				D8B4B2D72AF573A40053AAE4 /* AppDelegate.swift */,
 				D8B4B2D92AF573A40053AAE4 /* GameViewController.swift */,
 				D8B4B2DB2AF573A40053AAE4 /* Renderer.swift */,
+				D0BB77BE2CFE7AF8001E2A8A /* OBJReader.swift */,
 				D8B4B2DD2AF573A40053AAE4 /* Shaders.metal */,
 				D0BB77B82CFBD186001E2A8A /* Structs.metal */,
 				D8B4B2E02AF573A50053AAE4 /* Assets.xcassets */,
 				D8B4B2E22AF573A50053AAE4 /* Main.storyboard */,
 				D8B4B2E52AF573A50053AAE4 /* MetalTutorial.entitlements */,
+				D0BB77BC2CFE7ACA001E2A8A /* teapot.obj */,
 			);
 			path = MetalTutorial;
 			sourceTree = "<group>";
@@ -131,6 +137,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D0BB77BD2CFE7ACA001E2A8A /* teapot.obj in Resources */,
 				D8B4B2EC2AF69B0C0053AAE4 /* metal_logo.png in Resources */,
 				D8B4B2E12AF573A50053AAE4 /* Assets.xcassets in Resources */,
 				D8B4B2E42AF573A50053AAE4 /* Main.storyboard in Resources */,
@@ -146,6 +153,7 @@
 			files = (
 				D0BB77B92CFBD186001E2A8A /* Structs.metal in Sources */,
 				D8B4B2DE2AF573A40053AAE4 /* Shaders.metal in Sources */,
+				D0BB77BF2CFE7AF8001E2A8A /* OBJReader.swift in Sources */,
 				D8B4B2DA2AF573A40053AAE4 /* GameViewController.swift in Sources */,
 				D8B4B2DC2AF573A40053AAE4 /* Renderer.swift in Sources */,
 				D8B4B2D82AF573A40053AAE4 /* AppDelegate.swift in Sources */,

@@ -51,6 +51,9 @@ class Renderer: NSObject, MTKViewDelegate {
         
         self.indexBuffer = self.device.makeBuffer(bytes: indices, length: indices.count * MemoryLayout.stride(ofValue: indices[0]), options: MTLResourceOptions.storageModeShared)!
         
+        let data = getObjData(objFile: "teapot.obj")
+        print(data)
+        
         super.init()
     }
     
