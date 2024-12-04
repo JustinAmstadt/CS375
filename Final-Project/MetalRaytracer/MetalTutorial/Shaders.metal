@@ -37,6 +37,7 @@ float3 rayColor(device const Sphere *spheres, uint sphereCount, device const Pla
     bool isHit = false;
     float closest = INFINITY;
     
+    /*
     for (uint i = 0; i < planeCount; i++) {
         float t = hitPlane(planes[i], ray);
         
@@ -74,7 +75,8 @@ float3 rayColor(device const Sphere *spheres, uint sphereCount, device const Pla
             isHit = true;
             closest = t;
         }
-    }
+    }*/
+    
     for (uint i = 0; i < modelCount; i++) {
         float t = hitModel(models[i], vertices, indices, ray);
         
@@ -85,8 +87,6 @@ float3 rayColor(device const Sphere *spheres, uint sphereCount, device const Pla
         }
     }
     
-    // if (models[0].indexCount > 18959) return float3(1.0f, 0.0f, 0.0f);
-
     if (isHit) {
         return outColor;
     } else {

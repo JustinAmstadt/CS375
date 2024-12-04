@@ -60,6 +60,9 @@ class Renderer: NSObject, MTKViewDelegate {
             teapotModel
         ]
         
+        vertices = translateVectors(vectors: vertices, translation: vector_float3(0.0, 0.0, 0.0))
+        vertices = scaleVectors(vectors: vertices, scale: vector_float3(100.0, 100.0, 100.0))
+        
         self.modelData = ModelDataBuffer(device: device, vertices: vertices, indices: indices)
         self.modelBuffer = ModelBuffer(device: device, models: models)
 
@@ -135,7 +138,7 @@ class Renderer: NSObject, MTKViewDelegate {
     
     func makePlaneBuffer() -> PlaneBuffer {
         let planes: [Plane] = [
-            Plane(center: vector_float3(0.0, 0.0, -5.0), normal: normalize(vector_float3(0.0, 0.0, 1.0)), color: simd_float3(0.0, 1.0, 0.0))
+            Plane(center: vector_float3(0.0, 0.0, 5.0), normal: normalize(vector_float3(0.0, 0.0, 1.0)), color: simd_float3(0.0, 1.0, 0.0))
         ]
         
         return PlaneBuffer(device: device, planes: planes)
@@ -143,7 +146,7 @@ class Renderer: NSObject, MTKViewDelegate {
     
     func makeDiskBuffer() -> DiskBuffer {
         let disks: [Disk] = [
-            Disk(center: vector_float3(-0.8, -0.3, -2.0), normal: normalize(vector_float3(1.0, 0.0, 1.0)),
+            Disk(center: vector_float3(-0.8, -0.3, -1.0), normal: normalize(vector_float3(1.0, 0.0, 1.0)),
             radius: 0.4, color: simd_float3(1.0, 1.0, 1.0))
         ]
         
