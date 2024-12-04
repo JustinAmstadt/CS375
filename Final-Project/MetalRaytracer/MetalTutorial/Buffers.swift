@@ -98,3 +98,14 @@ class ModelDataBuffer {
                                        options: .storageModeShared)!
     }
 }
+
+class CameraBuffer {
+    var buffer: MTLBuffer
+    
+    init(device: MTLDevice, camera: Camera) {
+        var cameraCopy = camera
+        self.buffer = device.makeBuffer(bytes: &cameraCopy,
+                                        length: MemoryLayout<Camera>.stride,
+                                        options: .storageModeShared)!
+    }
+}

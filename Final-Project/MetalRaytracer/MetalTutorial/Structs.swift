@@ -44,3 +44,7 @@ struct Model {
     var indexOffset: Int
     var indexCount: UInt32
 }
+
+struct Camera {
+    var position: vector_float3
+}

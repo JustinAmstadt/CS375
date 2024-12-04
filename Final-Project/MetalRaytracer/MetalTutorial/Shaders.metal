@@ -37,7 +37,6 @@ float3 rayColor(device const Sphere *spheres, uint sphereCount, device const Pla
     bool isHit = false;
     float closest = INFINITY;
     
-    /*
     for (uint i = 0; i < planeCount; i++) {
         float t = hitPlane(planes[i], ray);
         
@@ -46,8 +45,7 @@ float3 rayColor(device const Sphere *spheres, uint sphereCount, device const Pla
             isHit = true;
             closest = t;
         }
-    }*/
-    /*
+    }
      for (uint i = 0; i < sphereCount; i++) {
          float t = hitSphere(spheres[i], ray);
          
@@ -68,7 +66,6 @@ float3 rayColor(device const Sphere *spheres, uint sphereCount, device const Pla
         }
     }
      
-     */
     for (uint i = 0; i < triangleCount; i++) {
         float t = hitTriangle(triangles[i], ray);
         
@@ -99,31 +96,31 @@ float3 rayColor(device const Sphere *spheres, uint sphereCount, device const Pla
     }
 }
 
-Ray makeRay(float2 uv) {
+Ray makeRay(device const Camera& camera, float2 uv) {
     vector_float3 pixelCenter = vector_float3(uv, 1.0f);
-    vector_float3 cameraCenter = vector_float3(0.0f, 0.0f, 5.0f);
     
     Ray ray;
-    ray.orig = cameraCenter;
-    ray.dir = normalize(pixelCenter - cameraCenter);
+    ray.orig = camera.position;
+    ray.dir = normalize(pixelCenter - camera.position);
     
     return ray;
 }
 
 kernel void computeShader(
                           texture2d<float, access::write> outputTexture [[texture(0)]],
-                          device const Sphere *spheres [[buffer(0)]],
-                          constant uint& sphereCount [[buffer(1)]],
-                          device const Plane *planes [[buffer(2)]],
-                          constant uint& planeCount [[buffer(3)]],
-                          device const Disk *disks [[buffer(4)]],
-                          constant uint& diskCount [[buffer(5)]],
-                          device const Triangle *triangles [[buffer(6)]],
-                          constant uint& triangleCount [[buffer(7)]],
-                          device const Model *models [[buffer(8)]],
-                          constant uint& modelCount [[buffer(9)]],
-                          device const vector_float3 *vertices [[buffer(10)]],
-                          device const uint *indices [[buffer(11)]],
+                          device const Camera& camera [[buffer(0)]],
+                          device const Sphere *spheres [[buffer(1)]],
+                          constant uint& sphereCount [[buffer(2)]],
+                          device const Plane *planes [[buffer(3)]],
+                          constant uint& planeCount [[buffer(4)]],
+                          device const Disk *disks [[buffer(5)]],
+                          constant uint& diskCount [[buffer(6)]],
+                          device const Triangle *triangles [[buffer(7)]],
+                          constant uint& triangleCount [[buffer(8)]],
+                          device const Model *models [[buffer(9)]],
+                          constant uint& modelCount [[buffer(10)]],
+                          device const vector_float3 *vertices [[buffer(11)]],
+                          device const uint *indices [[buffer(12)]],
                           uint2 tid [[thread_position_in_grid]],
                           uint2 gridSize [[threads_per_grid]]
                           ) {
@@ -136,7 +133,7 @@ kernel void computeShader(
     float aspectRatio = float(outputTexture.get_width()) / float(outputTexture.get_height());
     uv.x *= aspectRatio;
     
-    Ray ray = makeRay(uv);
+    Ray ray = makeRay(camera, uv);
     float3 color = rayColor(spheres, sphereCount, planes, planeCount, disks, diskCount, triangles, triangleCount, models, modelCount, vertices, indices, ray);
     
     outputTexture.write(float4(color, 1.0f), tid);

@@ -26,6 +26,7 @@ static float hitPlane(vector_float3 planeNormal, vector_float3 planePoint, Ray r
     }
     
     float t = dot(planePoint - ray.orig, planeNormal) / denom;
+    t = -t;
     
     return (t < 0.0f) ? -1.0f : t;
 }
