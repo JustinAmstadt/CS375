@@ -14,7 +14,7 @@ func getObjData(objFile: String, verts: inout [vector_float3], indices: inout [U
     var indexOffset: Int = indices.count
     var indexCount: UInt32 = 0
     
-    if let filePath = Bundle.main.path(forResource: "teapot", ofType: "obj") {
+    if let filePath = Bundle.main.path(forResource: "basic", ofType: "obj") {
         do {
             let fileContents = try String(contentsOfFile: filePath, encoding: .utf8)
             let lines = fileContents.split(separator: "\n")

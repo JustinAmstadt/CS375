@@ -132,6 +132,7 @@ kernel void computeShader(
     float2 uv = (float2(tid) / float2(gridSize)) * 2.0f - 1.0f;
     float aspectRatio = float(outputTexture.get_width()) / float(outputTexture.get_height());
     uv.x *= aspectRatio;
+    // uv.x = -uv.x;
     
     Ray ray = makeRay(camera, uv);
     float3 color = rayColor(spheres, sphereCount, planes, planeCount, disks, diskCount, triangles, triangleCount, models, modelCount, vertices, indices, ray);
