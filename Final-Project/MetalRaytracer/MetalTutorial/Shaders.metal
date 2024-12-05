@@ -65,7 +65,7 @@ float3 rayColor(device const Sphere *spheres, uint sphereCount, device const Pla
             isHit = true;
             closest = t;
         }
-    }
+    }*/
      
     for (uint i = 0; i < triangleCount; i++) {
         float t = hitTriangle(triangles[i], ray);
@@ -75,7 +75,7 @@ float3 rayColor(device const Sphere *spheres, uint sphereCount, device const Pla
             isHit = true;
             closest = t;
         }
-    }*/
+    }
     
     for (uint i = 0; i < modelCount; i++) {
         float t = hitModel(models[i], vertices, indices, ray);

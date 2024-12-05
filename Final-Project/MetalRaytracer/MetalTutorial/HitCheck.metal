@@ -118,7 +118,9 @@ float hitTriangle(Triangle triangle, Ray ray) {
 }
 
 float hitModel(Model model, device const vector_float3 *vertices, device const uint *indices, Ray ray) {
-    for (uint i = model.indexOffset; i < 100; i += 3) {
+    // 18960 is the number of indices the teapot model has
+    // I am using magic numbers because I can't figure out why the model value isn't getting transferred into the GPU
+    for (uint i = model.indexOffset; i < 18960 / 3; i += 3) {
         // Get the indices for the triangle
         uint idx0 = indices[model.indexOffset + i];
         uint idx1 = indices[model.indexOffset + i + 1];

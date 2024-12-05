@@ -59,9 +59,10 @@ class Renderer: NSObject, MTKViewDelegate {
         let models: [Model] = [
             teapotModel
         ]
+        print(teapotModel.indexCount)
         
-        vertices = translateVectors(vectors: vertices, translation: vector_float3(0.0, 0.0, 0.0))
-        vertices = scaleVectors(vectors: vertices, scale: vector_float3(100.0, 100.0, 100.0))
+        // vertices = translateVectors(vectors: vertices, translation: vector_float3(0.0, 0.0, 0.0))
+        // vertices = scaleVectors(vectors: vertices, scale: vector_float3(100.0, 100.0, 100.0))
         
         self.modelData = ModelDataBuffer(device: device, vertices: vertices, indices: indices)
         self.modelBuffer = ModelBuffer(device: device, models: models)
@@ -122,7 +123,9 @@ class Renderer: NSObject, MTKViewDelegate {
     }
     
     func makeCameraBuffer() -> CameraBuffer {
-        let camera: Camera = Camera(position: vector_float3(0.0, 0.0, 0.0))
+        var position = [vector_float3(0.0, 0.0, 0.0)]
+        position = translateVectors(vectors: position, translation: vector_float3(0.0, 0.0, 0.0))
+        let camera: Camera = Camera(position: position[0])
         return CameraBuffer(device: device, camera: camera)
     }
     
@@ -154,8 +157,15 @@ class Renderer: NSObject, MTKViewDelegate {
     }
     
     func makeTriangleBuffer() -> TriangleBuffer {
+        var verts: [vector_float3] = [
+            vector_float3(-0.8, -0.8, -2.0),
+            vector_float3(0.8, -0.8, -2.0),
+            vector_float3(0.8, 0.8, -2.0)
+        ]
+        verts = translateVectors(vectors: verts, translation: vector_float3(1.0, 1.0, -5.0))
+        
         let triangles: [Triangle] = [
-            Triangle(v0: vector_float3(-0.8, -0.8, -2.0), v1: vector_float3(0.8, -0.8, -2.0), v2: vector_float3(0.8, 0.8, -2.0), color: simd_float3(1.0, 1.0, 0.0))
+            Triangle(v0: verts[0], v1: verts[1], v2: verts[2], color: simd_float3(1.0, 1.0, 0.0))
         ]
         
         return TriangleBuffer(device: device, triangles: triangles)
