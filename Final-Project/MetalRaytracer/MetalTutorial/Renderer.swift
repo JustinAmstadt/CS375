@@ -1,6 +1,7 @@
 import Metal
 import MetalKit
 import simd
+import QuartzCore
 
 class Renderer: NSObject, MTKViewDelegate {
     var device: MTLDevice
@@ -20,10 +21,13 @@ class Renderer: NSObject, MTKViewDelegate {
     lazy var triangleBuffer: TriangleBuffer = self.makeTriangleBuffer()
     var modelBuffer: ModelBuffer
     var modelData: ModelDataBuffer
+    var deltaTimeBuffer: MTLBuffer
     
     var texture: MTLTexture
     
     var quadIndices: [ushort]
+    
+    var lastTime: Float
     
     init?(metalKitView: MTKView) {
         //Device and command queue
@@ -48,22 +52,32 @@ class Renderer: NSObject, MTKViewDelegate {
         
         self.indexBuffer = self.device.makeBuffer(bytes: quadIndices, length: quadIndices.count * MemoryLayout.stride(ofValue: quadIndices[0]), options: MTLResourceOptions.storageModeShared)!
         
+        self.lastTime = Float(CACurrentMediaTime())
+        
+        let currentTime: Float = Float(CACurrentMediaTime())
+        var deltaTime: Float = currentTime - lastTime
+        lastTime = currentTime
+        
+        self.deltaTimeBuffer = self.device.makeBuffer(bytes: &deltaTime,
+                                                  length: MemoryLayout<Float>.stride,
+                                                  options: .storageModeShared)!
+
         // Models
         
         var vertices: [vector_float3] = []
         var indices: [UInt32] = []
         
         // Keep doing this on these arrays to get the full list of model values packed into these two arrays
-        let teapotModel = getObjData(objFile: "teapot.obj", verts: &vertices, indices: &indices)
+        let teapotModel = getObjData(objFile: "car.obj", verts: &vertices, indices: &indices)
         
         let models: [Model] = [
             teapotModel
         ]
         print(teapotModel.indexCount)
         
-        vertices = translateVectors(vectors: vertices, translation: vector_float3(0.0, 1.0, -3.0))
+        vertices = translateVectors(vectors: vertices, translation: vector_float3(0.3, -0.8, -1.0))
         // vertices = scaleVectors(vectors: vertices, scale: vector_float3(100.0, 100.0, 100.0))
-        
+
         self.modelData = ModelDataBuffer(device: device, vertices: vertices, indices: indices)
         self.modelBuffer = ModelBuffer(device: device, models: models)
 
@@ -107,6 +121,14 @@ class Renderer: NSObject, MTKViewDelegate {
         computeEncoder.setComputePipelineState(computePipeline)
         computeEncoder.setTexture(texture, index: 0)
         
+        let currentTime: Float = Float(CACurrentMediaTime())
+        var deltaTime: Float = currentTime - lastTime
+        lastTime = currentTime
+        
+        self.deltaTimeBuffer = self.device.makeBuffer(bytes: &deltaTime,
+                                                  length: MemoryLayout<Float>.stride,
+                                                  options: .storageModeShared)!
+
         setComputeBuffers(computeEncoder)
         
         // Dispatch threads
@@ -202,6 +224,10 @@ class Renderer: NSObject, MTKViewDelegate {
         computeEncoder.setBuffer(modelBuffer.countBuffer, offset: 0, index: 10)
         computeEncoder.setBuffer(modelData.verticesBuffer, offset: 0, index: 11)
         computeEncoder.setBuffer(modelData.indicesBuffer, offset: 0, index: 12)
+        
+        // Delta Time
+        
+        computeEncoder.setBuffer(deltaTimeBuffer, offset: 0, index: 13)
     }
     
     func renderPass(_ view: MTKView, _ commandBuffer: MTLCommandBuffer) {

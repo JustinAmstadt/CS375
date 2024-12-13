@@ -32,7 +32,7 @@ bool isNewColor(float t, float closest) {
     return t > 0.0 && t < closest;
 }
 
-float3 rayColor(device const Sphere *spheres, uint sphereCount, device const Plane *planes, constant uint& planeCount, device const Disk *disks, constant uint& diskCount, device const Triangle *triangles, constant uint& triangleCount, device const Model *models, constant uint& modelCount, device const vector_float3 *vertices, device const uint *indices, Ray ray) {
+float3 rayColor(device const Sphere *spheres, uint sphereCount, device const Plane *planes, constant uint& planeCount, device const Disk *disks, constant uint& diskCount, device const Triangle *triangles, constant uint& triangleCount, device const Model *models, constant uint& modelCount, device const vector_float3 *vertices, device const uint *indices, device const float& deltaTime, Ray ray) {
     float3 outColor;
     bool isHit = false;
     float closest = INFINITY;
@@ -121,6 +121,7 @@ kernel void computeShader(
                           constant uint& modelCount [[buffer(10)]],
                           device const vector_float3 *vertices [[buffer(11)]],
                           device const uint *indices [[buffer(12)]],
+                          device const float& deltaTime [[buffer(13)]],
                           uint2 tid [[thread_position_in_grid]],
                           uint2 gridSize [[threads_per_grid]]
                           ) {
@@ -135,7 +136,7 @@ kernel void computeShader(
     // uv.x = -uv.x;
     
     Ray ray = makeRay(camera, uv);
-    float3 color = rayColor(spheres, sphereCount, planes, planeCount, disks, diskCount, triangles, triangleCount, models, modelCount, vertices, indices, ray);
+    float3 color = rayColor(spheres, sphereCount, planes, planeCount, disks, diskCount, triangles, triangleCount, models, modelCount, vertices, indices, deltaTime, ray);
     
     outputTexture.write(float4(color, 1.0f), tid);
 }

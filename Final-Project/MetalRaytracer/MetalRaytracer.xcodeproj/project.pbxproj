@@ -10,6 +10,7 @@
 		D0755E802CFE973800A1D36E /* Shaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = D0755E7F2CFE973800A1D36E /* Shaders.metal */; };
 		D0755E822D00F3E900A1D36E /* Transformation.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0755E812D00F3E900A1D36E /* Transformation.swift */; };
 		D0755E842D01409700A1D36E /* basic.obj in Resources */ = {isa = PBXBuildFile; fileRef = D0755E832D01409700A1D36E /* basic.obj */; };
+		D0755E862D0148E700A1D36E /* Car.obj in Resources */ = {isa = PBXBuildFile; fileRef = D0755E852D0148E700A1D36E /* Car.obj */; };
 		D0BB77B92CFBD186001E2A8A /* Structs.metal in Sources */ = {isa = PBXBuildFile; fileRef = D0BB77B82CFBD186001E2A8A /* Structs.metal */; };
 		D0BB77BD2CFE7ACA001E2A8A /* teapot.obj in Resources */ = {isa = PBXBuildFile; fileRef = D0BB77BC2CFE7ACA001E2A8A /* teapot.obj */; };
 		D0BB77BF2CFE7AF8001E2A8A /* OBJReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0BB77BE2CFE7AF8001E2A8A /* OBJReader.swift */; };
@@ -28,6 +29,7 @@
 		D0755E7F2CFE973800A1D36E /* Shaders.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = Shaders.metal; sourceTree = "<group>"; };
 		D0755E812D00F3E900A1D36E /* Transformation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Transformation.swift; sourceTree = "<group>"; };
 		D0755E832D01409700A1D36E /* basic.obj */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = basic.obj; sourceTree = "<group>"; };
+		D0755E852D0148E700A1D36E /* Car.obj */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Car.obj; sourceTree = "<group>"; };
 		D0BB77B82CFBD186001E2A8A /* Structs.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = Structs.metal; sourceTree = "<group>"; };
 		D0BB77BC2CFE7ACA001E2A8A /* teapot.obj */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = teapot.obj; sourceTree = "<group>"; };
 		D0BB77BE2CFE7AF8001E2A8A /* OBJReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OBJReader.swift; sourceTree = "<group>"; };
@@ -94,6 +96,7 @@
 				D8B4B2E52AF573A50053AAE4 /* MetalTutorial.entitlements */,
 				D0BB77BC2CFE7ACA001E2A8A /* teapot.obj */,
 				D0755E832D01409700A1D36E /* basic.obj */,
+				D0755E852D0148E700A1D36E /* Car.obj */,
 			);
 			path = MetalTutorial;
 			sourceTree = "<group>";
@@ -156,6 +159,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D0755E862D0148E700A1D36E /* Car.obj in Resources */,
 				D0BB77BD2CFE7ACA001E2A8A /* teapot.obj in Resources */,
 				D0755E842D01409700A1D36E /* basic.obj in Resources */,
 				D8B4B2E12AF573A50053AAE4 /* Assets.xcassets in Resources */,
